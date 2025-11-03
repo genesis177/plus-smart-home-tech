@@ -12,8 +12,7 @@ import ru.yandex.practicum.telemetry.collector.producer.KafkaEventProducer;
  * Обработчик события от датчика переключателя.
  */
 
-@Service
-@Slf@Component
+@Component
 @Slf4j
 public class SwitchSensorEventHandler extends BaseSensorEventHandler<SwitchSensorAvro> {
 
@@ -42,4 +41,4 @@ public class SwitchSensorEventHandler extends BaseSensorEventHandler<SwitchSenso
                 .build();
     }
 
-}}
+}
