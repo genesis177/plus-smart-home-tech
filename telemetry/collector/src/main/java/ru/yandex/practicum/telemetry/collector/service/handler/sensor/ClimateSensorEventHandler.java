@@ -1,19 +1,17 @@
 package ru.yandex.practicum.telemetry.collector.service.handler.sensor;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
+import ru.yandex.practicum.grpc.telemetry.event.ClimateSensorProto;
+import ru.yandex.practicum.grpc.telemetry.event.SensorEventProto;
 import ru.yandex.practicum.kafka.telemetry.event.ClimateSensorAvro;
 import ru.yandex.practicum.telemetry.collector.configuration.CollectorKafkaConfig;
-import ru.yandex.practicum.telemetry.collector.model.enums.SensorEventType;
-import ru.yandex.practicum.telemetry.collector.model.sensor.ClimateSensorEvent;
-import ru.yandex.practicum.telemetry.collector.model.sensor.SensorEvent;
 import ru.yandex.practicum.telemetry.collector.producer.KafkaEventProducer;
-
 /**
  * Обработчик события от датчика климата.
  */
 
-@Service
+@Component
 @Slf4j
 public class ClimateSensorEventHandler extends BaseSensorEventHandler<ClimateSensorAvro> {
 
@@ -23,14 +21,19 @@ public class ClimateSensorEventHandler extends BaseSensorEventHandler<ClimateSen
     }
 
     @Override
-    public SensorEventType getMessageType() {
-        return SensorEventType.CLIMATE_SENSOR_EVENT;
+    public SensorEventProto.PayloadCase getMessageType() {
+        return SensorEventProto.PayloadCase.CLIMATE_SENSOR_EVENT;
     }
 
     @Override
-    protected ClimateSensorAvro mapToAvro(final SensorEvent event) {
+    protected ClimateSensorAvro mapToAvro(final SensorEventProto event) {
         log.debug("Mapping ClimateSensorEvent to Avro: {}", event);
-        final ClimateSensorEvent _event = (ClimateSensorEvent) event;
+        if (event.getPayloadCase() != SensorEventProto.PayloadCase.CLIMATE_SENSOR_EVENT) {
+            throw new IllegalArgumentException(
+                    "Invalid payload type for ClimateSensorEventHandler: " + event.getPayloadCase());
+        }
+        final ClimateSensorProto _event = event.getClimateSensorEvent();
+
         return ClimateSensorAvro.newBuilder()
                 .setCo2Level(_event.getCo2Level())
                 .setHumidity(_event.getHumidity())

@@ -1,19 +1,18 @@
 package ru.yandex.practicum.telemetry.collector.service.handler.hub;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
+import ru.yandex.practicum.grpc.telemetry.event.HubEventProto;
+import ru.yandex.practicum.grpc.telemetry.event.ScenarioRemovedEventProto;
 import ru.yandex.practicum.kafka.telemetry.event.ScenarioRemovedEventAvro;
 import ru.yandex.practicum.telemetry.collector.configuration.CollectorKafkaConfig;
-import ru.yandex.practicum.telemetry.collector.model.enums.hub.HubEventType;
-import ru.yandex.practicum.telemetry.collector.model.hub.HubEvent;
-import ru.yandex.practicum.telemetry.collector.model.hub.ScenarioRemovedEvent;
 import ru.yandex.practicum.telemetry.collector.producer.KafkaEventProducer;
 
 /**
  * Обработчик события удаления автоматизированного сценария от хаба.
  */
 
-@Service
+@Component
 @Slf4j
 public class ScenarioRemovedEventHandler extends BaseHubEventHandler<ScenarioRemovedEventAvro> {
 
@@ -23,14 +22,18 @@ public class ScenarioRemovedEventHandler extends BaseHubEventHandler<ScenarioRem
     }
 
     @Override
-    public HubEventType getMessageType() {
-        return HubEventType.SCENARIO_REMOVED;
+    public HubEventProto.PayloadCase getMessageType() {
+        return HubEventProto.PayloadCase.SCENARIO_REMOVED;
     }
 
     @Override
-    protected ScenarioRemovedEventAvro mapToAvro(final HubEvent event) {
-        log.debug("Mapping ScenarioRemovedEvent to Avro: {}", event);
-        final ScenarioRemovedEvent _event = (ScenarioRemovedEvent) event;
+    protected ScenarioRemovedEventAvro mapToAvro(final HubEventProto event) {
+        log.debug("Mapping ScenarioRemovedEventProto to Avro: {}", event);
+        if (event.getPayloadCase() != HubEventProto.PayloadCase.SCENARIO_REMOVED) {
+            throw new IllegalArgumentException(
+                    "Invalid payload type for ScenarioRemovedEventHandler: " + event.getPayloadCase());
+        }
+        final ScenarioRemovedEventProto _event = event.getScenarioRemoved();
         return ScenarioRemovedEventAvro.newBuilder()
                 .setName(_event.getName())
                 .build();
