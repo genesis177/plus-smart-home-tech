@@ -1,19 +1,18 @@
 package ru.yandex.practicum.telemetry.collector.service.handler.hub;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
+import ru.yandex.practicum.grpc.telemetry.event.DeviceRemovedEventProto;
+import ru.yandex.practicum.grpc.telemetry.event.HubEventProto;
 import ru.yandex.practicum.kafka.telemetry.event.DeviceRemovedEventAvro;
 import ru.yandex.practicum.telemetry.collector.configuration.CollectorKafkaConfig;
-import ru.yandex.practicum.telemetry.collector.model.enums.hub.HubEventType;
-import ru.yandex.practicum.telemetry.collector.model.hub.DeviceRemovedEvent;
-import ru.yandex.practicum.telemetry.collector.model.hub.HubEvent;
 import ru.yandex.practicum.telemetry.collector.producer.KafkaEventProducer;
 
 /**
  * Обработчик события удаления устройства от хаба.
  */
 
-@Service
+@Component
 @Slf4j
 public class DeviceRemovedEventHandler extends BaseHubEventHandler<DeviceRemovedEventAvro> {
 
@@ -23,14 +22,18 @@ public class DeviceRemovedEventHandler extends BaseHubEventHandler<DeviceRemoved
     }
 
     @Override
-    public HubEventType getMessageType() {
-        return HubEventType.DEVICE_REMOVED;
+    public HubEventProto.PayloadCase getMessageType() {
+        return HubEventProto.PayloadCase.DEVICE_REMOVED;
     }
 
     @Override
-    protected DeviceRemovedEventAvro mapToAvro(final HubEvent event) {
-        log.debug("Mapping DeviceRemovedEvent to Avro: {}", event);
-        final DeviceRemovedEvent _event = (DeviceRemovedEvent) event;
+    protected DeviceRemovedEventAvro mapToAvro(final HubEventProto event) {
+        log.debug("Mapping DeviceRemovedEventProto to Avro: {}", event);
+        if (event.getPayloadCase() != HubEventProto.PayloadCase.DEVICE_REMOVED) {
+            throw new IllegalArgumentException(
+                    "Invalid payload type for DeviceRemovedEventHandler: " + event.getPayloadCase());
+        }
+        final DeviceRemovedEventProto _event = event.getDeviceRemoved();
         return DeviceRemovedEventAvro.newBuilder()
                 .setId(_event.getId())
                 .build();
