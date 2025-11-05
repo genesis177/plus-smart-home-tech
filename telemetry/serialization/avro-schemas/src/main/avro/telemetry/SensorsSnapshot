@@ -4,9 +4,10 @@ protocol SensorsSnapshotProtocol {
 	import idl "SensorEvent.avdl";
 
 	record SensorsSnapshotAvro {
-		string hubId;                      // Hub identifier
-		timestamp_ms timestamp;            // Snapshot timesatmp
-		map<SensorStateAvro> sensorsState; // Collection of Sensor state mapped by the device IDs
+		string hubId;
+		timestamp_ms timestamp;
+		map<SensorStateAvro> sensorsState;
+		map<SensorStateAvro> sensorsState;
 	}
 
 	record SensorStateAvro {
@@ -19,4 +20,3 @@ protocol SensorsSnapshotProtocol {
 			TemperatureSensorAvro
 		} data;
 	}
-}

@@ -1,4 +1,4 @@
-package ru.yandex.practicum.telemetry.aggregator.configuration;
+package ru.yandex.practicum.telemetry.analyzer.configuration.kafka.consumer;
 
 import jakarta.annotation.PostConstruct;
 import java.util.Properties;
@@ -10,14 +10,14 @@ import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import ru.yandex.practicum.kafka.telemetry.event.SensorEventAvro;
+import ru.yandex.practicum.kafka.telemetry.event.SensorsSnapshotAvro;
 
 @Getter
 @Setter
-@ConfigurationProperties(prefix = "aggregator.kafka.consumer")
+@ConfigurationProperties(prefix = "analyzer.kafka.consumers.snapshot")
 @Configuration
 @Slf4j
-public class AggregatorKafkaConsumerConfig {
+public class AnalyzerSnapshotConsumerConfig {
 
     private String bootstrapServers;
     private String groupId;
@@ -25,9 +25,10 @@ public class AggregatorKafkaConsumerConfig {
     private boolean enableAutoCommit;
     private String keyDeserializer;
     private String valueDeserializer;
+    private long consumeAttemptTimeoutMs;
 
     @Bean
-    public KafkaConsumer<String, SensorEventAvro> kafkaConsumer() {
+    public KafkaConsumer<String, SensorsSnapshotAvro> kafkaConsumer() {
         Properties config = new Properties();
         config.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
         config.put(ConsumerConfig.GROUP_ID_CONFIG, groupId);
@@ -42,12 +43,14 @@ public class AggregatorKafkaConsumerConfig {
 
     @PostConstruct
     private void validateConfig() {
+
         if (bootstrapServers == null || groupId == null ||
                 autoOffsetReset == null || keyDeserializer == null ||
                 valueDeserializer == null) {
-            log.error("Invalid Kafka consumer configuration.");
-            throw new IllegalStateException("Missing required Kafka configuration.");
+            log.error("Invalid Kafka snapshot consumer configuration.");
+            throw new IllegalStateException("Missing required Kafka configuration for the snapshot consumer.");
         }
-        log.debug("Kafka consumer configuration validated successfully.");
+        log.debug("Kafka snapshot consumer configuration validated successfully.");
     }
+
 }

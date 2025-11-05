@@ -12,7 +12,7 @@ message SensorEventProto {
   string id = 1; // Идентификатор сенсора
   google.protobuf.Timestamp timestamp = 2; // Метка времени события
   string hubId = 3; // Идентификатор связанного хаба
-  oneof payload { // Данные события от конкретного устройства
+  one of payload { // Данные события от конкретного устройства
     MotionSensorProto motion_sensor_event = 4; // Данные от датчика движения
     TemperatureSensorProto temperature_sensor_event = 5; // Данные от датчика температуры
     LightSensorProto light_sensor_event = 6; // Данные от датчика освещённости

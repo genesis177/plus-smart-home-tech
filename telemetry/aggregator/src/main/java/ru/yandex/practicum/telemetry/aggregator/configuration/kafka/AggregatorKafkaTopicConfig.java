@@ -1,4 +1,4 @@
-package ru.yandex.practicum.telemetry.aggregator.configuration;
+package ru.yandex.practicum.telemetry.aggregator.configuration.kafka;
 
 import jakarta.annotation.PostConstruct;
 import java.util.List;
