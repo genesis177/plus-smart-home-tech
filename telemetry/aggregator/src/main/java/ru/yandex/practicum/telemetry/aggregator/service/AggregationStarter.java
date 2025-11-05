@@ -2,6 +2,7 @@ package ru.yandex.practicum.telemetry.aggregator.service;
 
 import java.time.Duration;
 import java.util.Optional;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -13,7 +14,7 @@ import org.apache.kafka.common.errors.WakeupException;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.kafka.telemetry.event.SensorEventAvro;
 import ru.yandex.practicum.kafka.telemetry.event.SensorsSnapshotAvro;
-import ru.yandex.practicum.telemetry.aggregator.configuration.AggregatorKafkaTopicConfig;
+import ru.yandex.practicum.telemetry.aggregator.configuration.kafka.AggregatorKafkaTopicConfig;
 
 /**
  * {@code AggregationStarter} отвечает за инициализацию и управление процессом агрегирования данных,
@@ -58,11 +59,7 @@ public class AggregationStarter {
 
     }
 
-    /**
-     * Processes a single consumer record and generates a snapshot.
-     *
-     * @param record the Kafka consumer record
-     */
+
     private void processRecord(final ConsumerRecord<String, SensorEventAvro> record) {
         log.info(
                 "Processing  ConsumerRecord: topic={}, partition={}, offset={}, hubId={}, timestamp={}",
@@ -73,11 +70,6 @@ public class AggregationStarter {
         updatedSnapshot.ifPresent(this::sendSnapshotToKafka);
     }
 
-    /**
-     * Sends a generated snapshot to Kafka.
-     *
-     * @param snapshot the snapshot to be sent
-     */
     private void sendSnapshotToKafka(final SensorsSnapshotAvro snapshot) {
         log.info("Sending snapshot to Kafka: hubId={}", snapshot.getHubId());
 

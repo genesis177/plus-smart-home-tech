@@ -12,7 +12,6 @@ import org.apache.avro.specific.SpecificRecordBase;
 import org.apache.kafka.common.errors.SerializationException;
 import org.apache.kafka.common.serialization.Serializer;
 
-
 /**
  * Универсальный сериализатор для сериализации объектов классов, сгенерированных
  * на основе Avro-схем, в бинарные данные.

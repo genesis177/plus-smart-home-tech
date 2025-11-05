@@ -27,6 +27,12 @@
             <version>1.0-SNAPSHOT</version>
         </dependency>
 
+        <!-- Spring Kafka for Kafka integration -->
+        <dependency>
+            <groupId>org.springframework.kafka</groupId>
+            <artifactId>spring-kafka</artifactId>
+        </dependency>
+
         <!-- gRPC server -->
         <dependency>
             <groupId>net.devh</groupId>
@@ -45,12 +51,6 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-configuration-processor</artifactId>
             <optional>true</optional>
-        </dependency>
-
-        <!-- Spring Kafka for Kafka integration -->
-        <dependency>
-            <groupId>org.springframework.kafka</groupId>
-            <artifactId>spring-kafka</artifactId>
         </dependency>
 
         <!-- Validation for input data -->

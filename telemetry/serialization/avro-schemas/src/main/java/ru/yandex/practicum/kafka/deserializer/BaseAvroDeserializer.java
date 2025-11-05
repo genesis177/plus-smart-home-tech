@@ -1,6 +1,7 @@
 package ru.yandex.practicum.kafka.deserializer;
 
 import java.io.IOException;
+
 import lombok.extern.slf4j.Slf4j;
 import org.apache.avro.Schema;
 import org.apache.avro.io.BinaryDecoder;
@@ -10,7 +11,6 @@ import org.apache.avro.specific.SpecificDatumReader;
 import org.apache.avro.specific.SpecificRecordBase;
 import org.apache.kafka.common.errors.SerializationException;
 import org.apache.kafka.common.serialization.Deserializer;
-
 
 
 @Slf4j
