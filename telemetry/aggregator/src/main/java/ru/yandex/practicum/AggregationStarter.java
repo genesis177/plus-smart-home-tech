@@ -34,11 +34,12 @@ import java.util.Properties;
 @Component
 @RequiredArgsConstructor
 public class AggregationStarter {
-    private final Map<String, SensorsSnapshotAvro> snapshots = new HashMap<>();
+
     private static final Duration CONSUME_ATTEMPT_TIMEOUT = Duration.ofMillis(1000);
     private static final String SNAPSHOT_TOPIC = "telemetry.snapshots.v1";
     private static final List<String> TOPICS = List.of("telemetry.sensors.v1");
     private static final Map<TopicPartition, OffsetAndMetadata> currentOffsets = new HashMap<>();
+    private final Map<String, SensorsSnapshotAvro> snapshots = new HashMap<>();
     private final KafkaConsumer<String, SensorEventAvro> consumer = new KafkaConsumer<>(getConsumerProperties());
     private final KafkaProducer<String, SpecificRecordBase> producer = new KafkaProducer<>(getProducerProperties());
 
@@ -82,6 +83,35 @@ public class AggregationStarter {
 
     }
 
+    public Optional<SensorsSnapshotAvro> updateState(SensorEventAvro event) {
+        SensorsSnapshotAvro snapshot;
+        if (snapshots.containsKey(event.getHubId())) {
+            snapshot = snapshots.get(event.getHubId());
+        } else {
+            snapshot = SensorsSnapshotAvro.newBuilder()
+                    .setHubId(event.getHubId())
+                    .setSensorsState(new HashMap<>())
+                    .setTimestamp(Instant.now())
+                    .build();
+            snapshots.put(event.getHubId(), snapshot);
+        }
+        Map<String, SensorStateAvro> sensorsState = snapshot.getSensorsState();
+        if (sensorsState.containsKey(event.getId())) {
+            if (isDataNotChanged(sensorsState.get(event.getId()), event)) {
+                return Optional.empty();
+            }
+        }
+        SensorStateAvro sensorStateAvro = SensorStateAvro.newBuilder()
+                .setTimestamp(event.getTimestamp())
+                .setData(event.getPayload())
+                .build();
+        sensorsState.put(event.getId(), sensorStateAvro);
+        snapshot.setSensorsState(sensorsState);
+        snapshot.setTimestamp(event.getTimestamp());
+        return Optional.of(snapshot);
+    }
+
+
     private static Properties getConsumerProperties() {
         Properties properties = new Properties();
         properties.put(ConsumerConfig.CLIENT_ID_CONFIG, "SomeConsumer");
@@ -115,35 +145,6 @@ public class AggregationStarter {
                 }
             });
         }
-    }
-
-
-    public Optional<SensorsSnapshotAvro> updateState(SensorEventAvro event) {
-        SensorsSnapshotAvro snapshot;
-        if (snapshots.containsKey(event.getHubId())) {
-            snapshot = snapshots.get(event.getHubId());
-        } else {
-            snapshot = SensorsSnapshotAvro.newBuilder()
-                    .setHubId(event.getHubId())
-                    .setSensorsState(new HashMap<>())
-                    .setTimestamp(Instant.now())
-                    .build();
-            snapshots.put(event.getHubId(), snapshot);
-        }
-        Map<String, SensorStateAvro> sensorsState = snapshot.getSensorsState();
-        if (sensorsState.containsKey(event.getId())) {
-            if (isDataNotChanged(sensorsState.get(event.getId()), event)) {
-                return Optional.empty();
-            }
-        }
-        SensorStateAvro sensorStateAvro = SensorStateAvro.newBuilder()
-                .setTimestamp(event.getTimestamp())
-                .setData(event.getPayload())
-                .build();
-        sensorsState.put(event.getId(), sensorStateAvro);
-        snapshot.setSensorsState(sensorsState);
-        snapshot.setTimestamp(event.getTimestamp());
-        return Optional.of(snapshot);
     }
 
 

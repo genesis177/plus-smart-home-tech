@@ -13,7 +13,7 @@ import ru.yandex.practicum.telemetry.collector.mappers.TimestampMapper;
 @Component
 @RequiredArgsConstructor
 public class DeviceRemovedEventHandler implements HubEventHandler {
-    private final String topic = "telemetry.hubs.v1";
+    private static final String topic = "telemetry.hubs.v1";
     private final KafkaClientProducer kafkaClientProducer;
 
     @Override
