@@ -1,46 +1,49 @@
 syntax = "proto3";
 
 package telemetry.message.event;
-import "google/protobuf/timestamp.proto";
 
 option java_multiple_files = true;
 option java_package = "ru.yandex.practicum.grpc.telemetry.event";
 
+import "google/protobuf/timestamp.proto";
+
+
 message SensorEventProto {
-  string id = 1;
-  google.protobuf.Timestamp timestamp = 2;
-  string hubId = 3;
-  oneof payload {
-    MotionSensorProto motion_sensor_event = 4;
-    TemperatureSensorProto temperature_sensor_event = 5;
-    LightSensorProto light_sensor_event = 6;
-    ClimateSensorProto climate_sensor_event = 7;
-    SwitchSensorProto switch_sensor_event = 8;
+  string id = 1; // Идентификатор датчика
+  google.protobuf.Timestamp timestamp = 2; // Временная метка события
+  string hubId = 3; // Идентификатор связанного хаба
+  oneof payload { // Данные события от конкретного устройства
+    MotionSensorProto motion_sensor_event = 4; // Данные события от датчика движения
+    TemperatureSensorProto temperature_sensor_event = 5; // Данные события от датчика температуры
+    LightSensorProto light_sensor_event = 6; // Данные события от датчика освещенности
+    ClimateSensorProto climate_sensor_event = 7; // Данные события от климатического датчика
+    SwitchSensorProto switch_sensor_event = 8; // Данные события от датчика переключателя
   }
 }
 
 message MotionSensorProto {
-  int32 link_quality = 1;
-  bool motion = 2;
-  int32 voltage = 3;
+  int32 link_quality = 1; // Качество сигнала; большее значение означает лучшее качество
+  bool motion = 2;        // Указывает на наличие движения или присутствие кого-либо
+  int32 voltage = 3;      // Значение напряжения, полезно для оценки текущего напряжения в датчике или связанном устройстве
 }
 
+
 message TemperatureSensorProto {
-  int32 temperature_c = 1;
-  int32 temperature_f = 2;
+  int32 temperature_c = 1; // Температура в градусах Цельсия
+  int32 temperature_f = 2; // Температура в градусах Фаренгейта
 }
 
 message LightSensorProto {
-  int32 link_quality = 1;
-  int32 luminosity = 2;
+  int32 link_quality = 1; // Качество сигнала
+  int32 luminosity = 2;   // Уровень освещенности
 }
 
 message ClimateSensorProto {
-  int32 temperature_c = 1;
-  int32 humidity = 2;
-  int32 co2_level = 3;
+  int32 temperature_c = 1;  // Температура в градусах Цельсия
+  int32 humidity = 3;       // Уровень влажности
+  int32 co2_level = 5;      // Уровень CO2
 }
 
 message SwitchSensorProto {
-  bool state = 1;
+  bool state = 1; // Состояние переключателя: включено/выключено
 }
