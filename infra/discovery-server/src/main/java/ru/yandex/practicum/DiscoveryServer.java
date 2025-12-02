@@ -12,3 +12,5 @@ public class DiscoveryServer {
         SpringApplication.run(DiscoveryServer.class,args);
     }
 }
+
+//Пробное решение
