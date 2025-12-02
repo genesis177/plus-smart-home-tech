@@ -13,4 +13,3 @@ public class DiscoveryServer {
     }
 }
 
-//Пробное решение
