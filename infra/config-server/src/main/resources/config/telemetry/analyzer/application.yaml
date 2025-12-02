@@ -1,11 +1,13 @@
 spring:
   application:
     name: analyzer
+
   datasource:
     driverClassName: "org.postgresql.Driver"
     url: "jdbc:postgresql://localhost:5433/analyzer"  #5432
     username: "analyzer"
     password: "analyzer"
+
   jpa:
     hibernate:
       ddl-auto: none
@@ -15,22 +17,25 @@ spring:
         jdbc:
           time_zone: UTC
         format_sql: true
+
   sql:
     init:
       mode: always
 
 analyzer:
   kafka:
+    bootstrap-servers: localhost:9092
+
     consumers:
       snapshot:
-        bootstrap-servers: localhost:9092
+        bootstrap-servers: ${analyzer.kafka.bootstrap-servers}
         group-id: telemetry.analyzer.snapshot
         auto-offset-reset: earliest
         consume-attempt-timeout-ms: 1000
         key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
         value-deserializer: ru.yandex.practicum.kafka.deserializer.SensorsSnapshotDeserializer
       hubs:
-        bootstrap-servers: localhost:9092
+        bootstrap-servers: ${analyzer.kafka.bootstrap-servers}
         group-id: telemetry.analyzer.hub
         auto-offset-reset: earliest
         consume-attempt-timeout-ms: 7000
@@ -41,10 +46,13 @@ analyzer:
         - telemetry.snapshots.v1
       hubs:
         - telemetry.hubs.v1
+
   grpc:
+    server:
+      port: 59092
     client:
       hub-router:
-        address: 'static://localhost:59090'
+        address: 'discovery:///hub-router' #'static://localhost:59090'
         enableKeepAlive: true
         keepAliveWithoutCalls: true
         negotiationType: plaintext
@@ -52,6 +60,3 @@ analyzer:
 logging:
   level:
     ru.yandex.practicum: DEBUG
-#    root: INFO
-#    org.hibernate.SQL: DEBUG
-#    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
