@@ -3,70 +3,60 @@ package ru.yandex.practicum.commerce.cart.controller;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
 import ru.yandex.practicum.feign.ShoppingCartOperations;
 import ru.yandex.practicum.commerce.cart.service.ShoppingCartService;
 import ru.yandex.practicum.dto.cart.ChangeProductQuantityRequest;
 import ru.yandex.practicum.dto.cart.ShoppingCartDto;
-
-/**
- * REST-контроллер для управления операциями с корзиной покупок.
- * <p>
- * Реализует {@link ShoppingCartOperations}
- */
 
 @RestController
 @RequestMapping("/api/v1/shopping-cart")
 @RequiredArgsConstructor
 @Slf4j
 @Validated
-public class ShoppingCartController implements ShoppingCartOperations {
+public abstract class ShoppingCartController implements ShoppingCartOperations {
 
     private final ShoppingCartService shoppingCartService;
 
+    @GetMapping("/{username}")
     @Override
-    public ShoppingCartDto getShoppingCart(final String username) {
-        log.info("Received request to view shopping cart by User: {}.", username);
-        final ShoppingCartDto cart = shoppingCartService.getShoppingCart(username);
-        log.info("Returning shopping cart with ID: {}.", cart.getShoppingCartId());
-        return cart;
+    public ShoppingCartDto getShoppingCart(@PathVariable String username) {
+        return shoppingCartService.getShoppingCart(username);
     }
 
+
+    @PostMapping("/{username}/add-products")
     @Override
-    public ShoppingCartDto addProductToCart(final Map<UUID, Long> products, final String username) {
-        log.info("Received request to add products to the cart by User: {}.", username);
-        final ShoppingCartDto cartDto = shoppingCartService.addProductsToCart(username, products);
-        log.info("Returning updated shopping cart ID {}", cartDto.getShoppingCartId());
-        return cartDto;
+    public ShoppingCartDto addProductToCart(@PathVariable String username,
+                                            @RequestBody Map<UUID, Long> products) {
+        return shoppingCartService.addProductsToCart(username, products);
     }
 
+    @PostMapping("/{username}/change-quantity")
     @Override
-    public void deactivateCurrentCart(final String username) {
-        log.info("Received request to deactivate shopping cart for user {}.", username);
+    public ShoppingCartDto changeQuantity(@PathVariable String username,
+                                          @RequestBody ChangeProductQuantityRequest request) {
+        return shoppingCartService.changeProductQuantity(username, request);
+    }
+
+    @PostMapping("/{username}/remove-products")
+    @Override
+    public ShoppingCartDto removeProductsFromCart(@PathVariable String username,
+                                                  @RequestBody Set<UUID> products) {
+        return shoppingCartService.retainProductsInTheCart(username, products);
+    }
+
+    @PostMapping("/{username}/deactivate")
+    @Override
+    public void deactivateCurrentCart(@PathVariable String username) {
         shoppingCartService.deactivateShoppingCart(username);
-        log.info("Shopping cart deactivated successfully.");
-    }
-
-    @Override
-    public ShoppingCartDto removeProductsFromCart(final String username, final Set<UUID> products) {
-        log.info("Received request to retain {} products and remove others from the cart of user {}.",
-                products.size(), username);
-        final ShoppingCartDto cartDto = shoppingCartService.retainProductsInTheCart(username, products);
-        log.info("Returning updated shopping cart with ID {}", cartDto.getShoppingCartId());
-        return cartDto;
-    }
-
-    @Override
-    public ShoppingCartDto changeQuantity(final String username,
-                                          final ChangeProductQuantityRequest request) {
-        log.info("Received request to change quantity of product {} by user {}.",
-                request.getProductId(), username);
-        final ShoppingCartDto cartDto = shoppingCartService.changeProductQuantity(username, request);
-        log.info("Returning shopping cart ID {} with updated product.", cartDto.getShoppingCartId());
-        return cartDto;
     }
 }

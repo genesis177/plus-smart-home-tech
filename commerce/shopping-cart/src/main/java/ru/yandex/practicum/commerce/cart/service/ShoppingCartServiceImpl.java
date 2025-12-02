@@ -4,10 +4,13 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 import ru.yandex.practicum.commerce.cart.mapper.ShoppingCartMapper;
 import ru.yandex.practicum.commerce.cart.model.ShoppingCart;
 import ru.yandex.practicum.commerce.cart.model.ShoppingCartState;
@@ -20,14 +23,6 @@ import ru.yandex.practicum.exception.NotAuthorizedUserException;
 import ru.yandex.practicum.exception.ShoppingCartModificationException;
 import ru.yandex.practicum.feign.WarehouseOperations;
 
-/**
- * Реализация сервиса для управления операциями с корзиной покупок.
- * <p>
- * Этот сервис позволяет пользователям взаимодействовать с их корзиной покупок, включая добавление товаров,
- * изменение количества, удаление товаров и деактивацию корзины. Он обеспечивает выполнение операций только с
- * активными корзинами, при этом поддерживая правильную валидацию ввода пользователя и состояния корзины.
- */
-
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -39,140 +34,108 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
 
     @Transactional
     @Override
-    public ShoppingCartDto getShoppingCart(final String username) {
+    public ShoppingCartDto getShoppingCart(String username) {
         validateUser(username);
-        log.debug("Retrieving shopping cart for the user {}.", username);
-
-        final ShoppingCart shoppingCart = getOrCreateShoppingCart(username);
-        return ShoppingCartMapper.toDto(shoppingCart);
+        ShoppingCart cart = getOrCreateShoppingCart(username);
+        return ShoppingCartMapper.toDto(cart);
     }
 
     @Transactional
     @Override
-    public ShoppingCartDto addProductsToCart(final String username, final Map<UUID, Long> products) {
+    public ShoppingCartDto addProductsToCart(String username, Map<UUID, Long> products) {
         validateUser(username);
-        log.debug("Adding products {} to the shopping cart for the user {}.", products, username);
+        ShoppingCart cart = getOrCreateShoppingCart(username);
+        validateCartIsActive(cart);
 
-        final ShoppingCart shoppingCart = getOrCreateShoppingCart(username);
-        validateCartIsActive(shoppingCart);
+        products.forEach((k, v) -> cart.getProducts().merge(k, v, Long::sum));
 
-        products.forEach((key, value) -> shoppingCart.getProducts().merge(key, value, Long::sum));
+        cartRepository.save(cart);
 
-        log.debug("Shopping cart after adding products: {}", shoppingCart);
-
-        final ShoppingCartDto cartDto = ShoppingCartMapper.toDto(shoppingCart);
+        ShoppingCartDto cartDto = ShoppingCartMapper.toDto(cart);
         validateAllProductsAvailable(cartDto);
-        cartRepository.save(shoppingCart);
+
         return cartDto;
     }
 
     @Transactional
     @Override
-    public void deactivateShoppingCart(final String username) {
+    public void deactivateShoppingCart(String username) {
         validateUser(username);
-        log.debug("Deactivating Shopping Cart for user {}.", username);
+        ShoppingCart cart = getOrCreateShoppingCart(username);
+        if (cart.getCartState() == ShoppingCartState.DEACTIVATED) return;
 
-        final ShoppingCart shoppingCart = getOrCreateShoppingCart(username);
-        if (shoppingCart.getCartState() == ShoppingCartState.DEACTIVATED) {
-            log.debug("Cart {} is already deactivated.", shoppingCart.getCartId());
-            return;
-        }
-        shoppingCart.setCartState(ShoppingCartState.DEACTIVATED);
-        cartRepository.save(shoppingCart);
-        log.debug("Shop[ing cart with ID {} was successfully deactivated for username {}.",
-                shoppingCart.getCartId(), shoppingCart.getUsername());
+        cart.setCartState(ShoppingCartState.DEACTIVATED);
+        cartRepository.save(cart);
     }
 
     @Transactional
     @Override
-    public ShoppingCartDto retainProductsInTheCart(final String username, final Set<UUID> products) {
+    public ShoppingCartDto retainProductsInTheCart(String username, Set<UUID> products) {
         validateUser(username);
-        log.debug("Removing products with ID: {} from the shopping cart of user {}.", products,
-                username);
+        ShoppingCart cart = getOrCreateShoppingCart(username);
+        validateCartIsActive(cart);
+        validateProductsInTheCart(cart, products);
 
-        final ShoppingCart shoppingCart = getOrCreateShoppingCart(username);
-        validateCartIsActive(shoppingCart);
-        validateProductsInTheCart(shoppingCart, products);
+        cart.getProducts().keySet().retainAll(products);
+        cartRepository.save(cart);
 
-        shoppingCart.getProducts().keySet().retainAll(products);
-
-        final ShoppingCart updatedCart = cartRepository.save(shoppingCart);
-        log.debug("Updated cart: {}.", updatedCart);
-        return ShoppingCartMapper.toDto(updatedCart);
+        return ShoppingCartMapper.toDto(cart);
     }
 
     @Transactional
     @Override
-    public ShoppingCartDto changeProductQuantity(final String username,
-                                                 final ChangeProductQuantityRequest request) {
-        log.debug("Changing quantity of the product {} to {} by user {}.",
-                request.getProductId(), request.getNewQuantity(), username);
+    public ShoppingCartDto changeProductQuantity(String username, ChangeProductQuantityRequest request) {
         validateUser(username);
+        ShoppingCart cart = getOrCreateShoppingCart(username);
+        validateCartIsActive(cart);
 
-        final ShoppingCart shoppingCart = getOrCreateShoppingCart(username);
-        validateCartIsActive(shoppingCart);
-
-        if (!shoppingCart.getProducts().containsKey(request.getProductId())) {
+        if (!cart.getProducts().containsKey(request.getProductId())) {
             throw new NoProductsInShoppingCartException(
-                    "No such Product in the cart - " + request.getProductId());
+                    "No such Product in the cart - " + request.getProductId()
+            );
         }
 
-        shoppingCart.getProducts().put(request.getProductId(), request.getNewQuantity());
+        cart.getProducts().put(request.getProductId(), request.getNewQuantity());
+        cartRepository.save(cart);
 
-        final ShoppingCart updatedCart = cartRepository.save(shoppingCart);
-        log.debug("Updated quantity for the product {} in the cart: {} .",
-                request.getProductId(), updatedCart);
-        return ShoppingCartMapper.toDto(updatedCart);
+        return ShoppingCartMapper.toDto(cart);
     }
 
-    private void validateAllProductsAvailable(final ShoppingCartDto cartDto) {
-        log.debug("Sending request to the warehouse to check product availability: {}", cartDto);
+    // ---------------- Private helpers ----------------
+
+    private void validateAllProductsAvailable(ShoppingCartDto cartDto) {
         warehouseClient.checkStock(cartDto);
     }
 
-    private void validateUser(final String username) {
-        log.debug("Validating username {}.", username);
+    private void validateUser(String username) {
         if (username == null || username.isBlank()) {
-            throw new NotAuthorizedUserException("Validation username " + username + " failed.");
+            throw new NotAuthorizedUserException("Invalid username: " + username);
         }
     }
 
-    private ShoppingCart getOrCreateShoppingCart(final String username) {
-        log.debug("Retrieving shopping cart if exist from DB for username {}.", username);
-        return cartRepository.findByUsername(username)
-                .orElseGet(() -> createShoppingCart(username));
+    private ShoppingCart getOrCreateShoppingCart(String username) {
+        return cartRepository.findByUsername(username).orElseGet(() -> createShoppingCart(username));
     }
 
-    private ShoppingCart createShoppingCart(final String username) {
-        log.debug("Creating new ACTIVE cart for User {}.", username);
-        final ShoppingCart shoppingCart = ShoppingCart.builder()
+    private ShoppingCart createShoppingCart(String username) {
+        ShoppingCart cart = ShoppingCart.builder()
                 .cartId(uuidGenerator.generate())
                 .username(username)
                 .cartState(ShoppingCartState.ACTIVE)
                 .products(new HashMap<>())
                 .build();
-        final ShoppingCart createdCart = cartRepository.save(shoppingCart);
-        log.debug("Created new cart with ID {} for user {}", createdCart.getCartId(),
-                createdCart.getUsername());
-        return createdCart;
+        return cartRepository.save(cart);
     }
 
-    private void validateCartIsActive(final ShoppingCart shoppingCart) {
-        log.debug("Validating shopping cart is allowed to modify, {}.", shoppingCart);
-        if (ShoppingCartState.DEACTIVATED.equals(shoppingCart.getCartState())) {
-            throw new ShoppingCartModificationException(
-                    "Current state is " + shoppingCart.getCartState());
+    private void validateCartIsActive(ShoppingCart cart) {
+        if (cart.getCartState() == ShoppingCartState.DEACTIVATED) {
+            throw new ShoppingCartModificationException("Cart is deactivated");
         }
     }
 
-    private void validateProductsInTheCart(final ShoppingCart shoppingCart,
-                                           final Set<UUID> products) {
-        log.debug("Ensuring shopping cart {} contains products {}.", shoppingCart, products);
-
-        if (shoppingCart.getProducts().isEmpty() ||
-                !shoppingCart.getProducts().keySet().containsAll(products)) {
-            throw new NoProductsInShoppingCartException(
-                    "Shopping cart content: " + shoppingCart.getProducts());
+    private void validateProductsInTheCart(ShoppingCart cart, Set<UUID> products) {
+        if (cart.getProducts().isEmpty() || !cart.getProducts().keySet().containsAll(products)) {
+            throw new NoProductsInShoppingCartException("Shopping cart content: " + cart.getProducts());
         }
     }
 }
