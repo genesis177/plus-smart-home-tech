@@ -102,7 +102,7 @@
                 <configuration>
                     <archive>
                         <manifestEntries>
-                            <Main-Class>ru.yandex.practicum.shoppingstore.ShoppingStoreApplication</Main-Class> <!-- Укажи свой основной класс -->
+                            <Main-Class>ru.yandex.practicum.shoppingstore.ShoppingStore</Main-Class> <!-- Укажи свой основной класс -->
                         </manifestEntries>
                     </archive>
                 </configuration>
