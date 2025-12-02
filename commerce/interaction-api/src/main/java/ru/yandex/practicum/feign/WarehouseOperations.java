@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import ru.yandex.practicum.dto.cart.ShoppingCartDto;
 import ru.yandex.practicum.dto.warehouse.AddProductToWarehouseRequest;
 import ru.yandex.practicum.dto.warehouse.AddressDto;
+import ru.yandex.practicum.dto.warehouse.BookedProductsDto;
 import ru.yandex.practicum.dto.warehouse.NewProductInWarehouseRequest;
 
 /**
@@ -26,7 +27,7 @@ public interface WarehouseOperations {
 
     @PutMapping("/check")
     @ResponseStatus(HttpStatus.OK)
-    void checkStock(@Validated @RequestBody ShoppingCartDto shoppingCart);
+    BookedProductsDto checkStock(@Validated @RequestBody ShoppingCartDto shoppingCart);
 
     @PutMapping("/add")
     @ResponseStatus(HttpStatus.OK)

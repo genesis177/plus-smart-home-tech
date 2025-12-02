@@ -3,8 +3,7 @@ package ru.yandex.practicum.commerce.warehouse.controller;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.feign.WarehouseOperations;
 import ru.yandex.practicum.commerce.warehouse.service.WarehouseService;
 import ru.yandex.practicum.dto.cart.ShoppingCartDto;
@@ -27,11 +26,10 @@ public class WarehouseController implements WarehouseOperations {
 
     /**
      * Добавляет новый продукт на склад.
-     *
-     * @param product данные нового продукта
      */
     @Override
-    public void addProduct(final NewProductInWarehouseRequest product) {
+    @PostMapping("/new-product")
+    public void addProduct(@RequestBody NewProductInWarehouseRequest product) {
         log.info("Получен запрос на добавление нового продукта с ID {} на склад", product.getProductId());
         warehouseService.addNewProduct(product);
         log.info("Продукт успешно добавлен.");
@@ -39,11 +37,10 @@ public class WarehouseController implements WarehouseOperations {
 
     /**
      * Увеличивает количество определенного продукта на складе.
-     *
-     * @param request данные запроса на увеличение количества продукта
      */
     @Override
-    public void increaseProductQuantity(final AddProductToWarehouseRequest request) {
+    @PostMapping("/add-product")
+    public void increaseProductQuantity(@RequestBody AddProductToWarehouseRequest request) {
         log.info("Получен запрос на увеличение количества продукта: {}.", request.getProductId());
         warehouseService.increaseProductQuantity(request);
         log.info("Количество продукта успешно увеличено.");
@@ -52,26 +49,23 @@ public class WarehouseController implements WarehouseOperations {
     /**
      * Проверяет наличие продуктов на складе для продуктов в корзине покупок.
      *
-     * @param shoppingCart данные корзины покупок
+     * @return
      */
     @Override
-    public void checkStock(final ShoppingCartDto shoppingCart) {
+    @PostMapping("/check-stock")
+    public BookedProductsDto checkStock(@RequestBody ShoppingCartDto shoppingCart) {
         log.info("Получен запрос на проверку наличия продуктов в корзине покупок с ID {}.",
                 shoppingCart.getShoppingCartId());
-        final BookedProductsDto bookedProducts = warehouseService.checkStock(shoppingCart);
-        log.info("Возвращена общая информация о корзине покупок.");
+        return warehouseService.checkStock(shoppingCart);
     }
 
     /**
      * Получает адрес склада.
-     *
-     * @return адрес склада
      */
     @Override
+    @GetMapping("/address")
     public AddressDto getWarehouseAddress() {
         log.info("Получен запрос на получение адреса склада");
-        final AddressDto address = warehouseService.getAddress();
-        log.info("Возвращен адрес из города: {}.", address.getCity());
-        return address;
+        return warehouseService.getAddress();
     }
 }
