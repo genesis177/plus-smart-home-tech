@@ -90,7 +90,7 @@
                 <configuration>
                     <archive>
                         <manifestEntries>
-                            <Main-Class>ru.yandex.practicum.CollectorApplication</Main-Class> <!-- Укажи свой основной класс -->
+                            <Main-Class>ru.yandex.practicum.telemetry.collector.Collector</Main-Class> <!-- Укажи свой основной класс -->
                         </manifestEntries>
                     </archive>
                 </configuration>

@@ -92,7 +92,7 @@
                 <configuration>
                     <archive>
                         <manifestEntries>
-                            <Main-Class>ru.yandex.practicum.AnalyzerApplication</Main-Class> <!-- Укажи свой основной класс -->
+                            <Main-Class>ru.yandex.practicum.telemetry.analyzer.Analyzer</Main-Class> <!-- Укажи свой основной класс -->
                         </manifestEntries>
                     </archive>
                 </configuration>
