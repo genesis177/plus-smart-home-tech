@@ -2,6 +2,7 @@ package ru.yandex.practicum.commerce.warehouse.controller;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.feign.WarehouseOperations;
@@ -29,6 +30,7 @@ public class WarehouseController implements WarehouseOperations {
      */
     @Override
     @PostMapping("/new-product")
+    @ResponseStatus(HttpStatus.CREATED)
     public void addProduct(@RequestBody NewProductInWarehouseRequest product) {
         log.info("Получен запрос на добавление нового продукта с ID {} на склад", product.getProductId());
         warehouseService.addNewProduct(product);
@@ -40,6 +42,7 @@ public class WarehouseController implements WarehouseOperations {
      */
     @Override
     @PostMapping("/add-product")
+    @ResponseStatus(HttpStatus.CREATED)
     public void increaseProductQuantity(@RequestBody AddProductToWarehouseRequest request) {
         log.info("Получен запрос на увеличение количества продукта: {}.", request.getProductId());
         warehouseService.increaseProductQuantity(request);
