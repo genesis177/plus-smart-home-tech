@@ -7,12 +7,14 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import ru.yandex.practicum.commerce.store.service.ShoppingStoreService;
+import ru.yandex.practicum.exception.ProductNotFoundException;
 import ru.yandex.practicum.feign.ShoppingStoreOperations;
 import ru.yandex.practicum.dto.product.ProductCategory;
 import ru.yandex.practicum.dto.product.ProductDto;
@@ -102,28 +104,36 @@ public class ShoppingStoreController implements ShoppingStoreOperations {
      */
     @Override
     public boolean updateQuantityState(final UUID productId, final QuantityState quantityState) {
-        final SetProductQuantityStateRequest request = new SetProductQuantityStateRequest(productId,
-                quantityState);
-        log.info("Получен запрос на обновление состояния количества для продукта с ID {}.",
-                request.getProductId());
-        boolean isUpdated = shoppingStoreService.updateQuantityState(request);
-        log.info("Состояние количества продукта успешно обновлено.");
-        return isUpdated;
+        try {
+            SetProductQuantityStateRequest request = new SetProductQuantityStateRequest(productId, quantityState);
+            boolean result = shoppingStoreService.updateQuantityState(request);
+            return result; // 200 или 201
+        } catch (Exception e) {
+            throw e; // чтобы глобальный обработчик вернул 500
+        }
     }
 
-    /**
-     * Удаляет продукт из ассортимента магазина. (Функция для сотрудников управления)
-     *
-     * @param productId ID продукта, который нужно удалить
-     * @return true, если продукт был успешно удален
-     */
     @Override
     @PutMapping("/removeProductFromStore")
     @ResponseStatus(HttpStatus.OK)
     public boolean removeProductFromStore(final UUID productId) {
-        log.info("Получен запрос на удаление продукта с ID {} из магазина.", productId);
-        boolean isRemoved = shoppingStoreService.removeProduct(productId);
-        log.info("Состояние продукта успешно обновлено на 'DEACTIVATE'.");
-        return isRemoved;
+        try {
+            return shoppingStoreService.removeProduct(productId); // при успехе 200
+        } catch (ProductNotFoundException e) {
+            throw e; // обработчик глобальный
+        } catch (Exception e) {
+            log.error("Ошибка при удалении продукта: ", e);
+            throw new RuntimeException(e); // вызовет 500
+        }
+    }
+
+    @org.springframework.web.bind.annotation.ExceptionHandler(ProductNotFoundException.class)
+    public ResponseEntity<Void> handleProductNotFound(ProductNotFoundException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).build(); // 404
+    }
+
+    @org.springframework.web.bind.annotation.ExceptionHandler(Exception.class)
+    public ResponseEntity<Void> handleAnyException(Exception ex) {
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build(); // 500
     }
 }
