@@ -9,9 +9,9 @@ import org.springframework.context.annotation.ComponentScan;
         "ru.yandex.practicum.commerce.warehouse",
         "ru.yandex.practicum.exception.handler"
 })
-public class Warehouse {
+public class WarehouseApplication {
 
     public static void main(String[] args) {
-        SpringApplication.run(Warehouse.class,args);
+        SpringApplication.run(WarehouseApplication.class,args);
     }
 }

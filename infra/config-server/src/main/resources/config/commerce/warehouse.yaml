@@ -1,0 +1,15 @@
+spring:
+  application:
+    name: warehouse
+
+  datasource:
+    driverClassName: org.postgresql.Driver
+    url: jdbc:postgresql://smart-home-tech-db:5432/sht?currentSchema=warehouse
+    username: sh
+    password: sh
+
+  jpa:
+    hibernate.ddl-auto: none
+    show-sql: true
+
+server.port: 0

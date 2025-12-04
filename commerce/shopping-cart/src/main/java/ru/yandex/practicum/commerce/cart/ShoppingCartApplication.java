@@ -1,17 +1,20 @@
-package ru.yandex.practicum.commerce.store;
+package ru.yandex.practicum.commerce.cart;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.context.annotation.ComponentScan;
 
 @SpringBootApplication
+@EnableFeignClients(basePackages = "ru.yandex.practicum.feign")
 @ComponentScan(basePackages = {
-        "ru.yandex.practicum.commerce.store",
+        "ru.yandex.practicum.commerce.cart",
         "ru.yandex.practicum.exception.handler"
 })
-public class ShoppingStore {
+public class ShoppingCartApplication {
 
     public static void main(String[] args) {
-        SpringApplication.run(ShoppingStore.class, args);
+        SpringApplication.run(ShoppingCartApplication.class,args);
+
     }
 }

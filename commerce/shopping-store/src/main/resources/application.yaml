@@ -3,19 +3,16 @@ spring:
     name: shopping-store
 
   config:
-    import: "configserver:"
+    import: "configserver:http://localhost:8888"
+
   cloud:
     config:
       discovery:
         enabled: true
         serviceId: config-server
       fail-fast: true
-      retry:
-        useRandomPolicy: true
-        max-interval: 10000
 
 eureka:
   client:
     serviceUrl:
       defaultZone: http://localhost:8761/eureka/
-    registerWithEureka: true
