@@ -1,32 +1,27 @@
 package ru.yandex.practicum.dto.warehouse;
 
-import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
+import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-/**
- * DTO, представляющий размеры товара.
- */
+import lombok.experimental.FieldDefaults;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class DimensionDto {
+    @NotNull
+    @Min(value = 1, message = "Ширина не может быть меньше 1")
+    Double width;
 
     @NotNull
-    @DecimalMin("1.0")
-    private Double depth;
+    @Min(value = 1, message = "Высота не может быть меньше 1")
+    Double height;
 
     @NotNull
-    @DecimalMin("1.0")
-    private Double height;
-
-    @NotNull
-    @DecimalMin("1.0")
-    private Double width;
-
+    @Min(value = 1, message = "Глубина не может быть меньше 1")
+    Double depth;
 }

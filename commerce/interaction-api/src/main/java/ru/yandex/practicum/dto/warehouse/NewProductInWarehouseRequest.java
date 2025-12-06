@@ -1,35 +1,30 @@
 package ru.yandex.practicum.dto.warehouse;
 
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
-import java.util.UUID;
+import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.experimental.FieldDefaults;
 
-/**
- * Представляет запрос на добавление нового товара на склад.
- */
+import java.util.UUID;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class NewProductInWarehouseRequest {
 
-    @NotNull
-    private UUID productId;
+    @NotNull(message = "Product ID must not be null")
+    UUID productId;
 
-    private Boolean fragile;
+    Boolean fragile;
 
-    @NotNull
-    @Valid
-    private DimensionDto dimension;
+    @NotNull(message = "Dimension must not be null")
+    DimensionDto dimension;
 
-    @NotNull
-    @DecimalMin(value = "1.0")
-    private Double weight;
-
+    @NotNull(message = "Weight must not be null")
+    @Min(value = 1, message = "Weight must be greater than 0")
+    Double weight;
 }

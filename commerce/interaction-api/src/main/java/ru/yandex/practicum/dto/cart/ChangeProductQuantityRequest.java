@@ -1,27 +1,22 @@
 package ru.yandex.practicum.dto.cart;
 
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Positive;
-import java.util.UUID;
+import jakarta.validation.constraints.PositiveOrZero;
+import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.experimental.FieldDefaults;
 
-/**
- * Объект запроса для изменения количества товара в корзине.
- */
+import java.util.UUID;
+
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class ChangeProductQuantityRequest {
+    UUID productId;
 
-    @NotNull
-    private UUID productId;
-
-    @NotNull
-    @Positive
-    private Long newQuantity;
-
+    @PositiveOrZero
+    Long newQuantity;
 }

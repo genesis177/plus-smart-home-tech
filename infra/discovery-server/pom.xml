@@ -11,13 +11,7 @@
 
     <artifactId>discovery-server</artifactId>
 
-    <properties>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <java.version>21</java.version>
-    </properties>
-
     <dependencies>
-        <!-- Eureka Server -->
         <dependency>
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-starter-netflix-eureka-server</artifactId>
@@ -31,26 +25,9 @@
 
     <build>
         <plugins>
-            <!-- Плагин для сборки Spring Boot приложений -->
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
-                <version>3.3.2</version>
-            </plugin>
-
-            <!-- Плагин для создания JAR с основным классом -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-jar-plugin</artifactId>
-                <version>3.2.0</version>
-                <configuration>
-                    <archive>
-                        <manifestEntries>
-                            <!-- Указываем основной класс -->
-                            <Main-Class>ru.yandex.practicum.DiscoveryServer</Main-Class>
-                        </manifestEntries>
-                    </archive>
-                </configuration>
             </plugin>
         </plugins>
     </build>

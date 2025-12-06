@@ -1,40 +1,19 @@
 spring:
   application:
-    name: shopping-cart  # Имя сервиса
-
+    name: shopping-cart
   config:
-    import: "configserver:http://localhost:8888"  # Подключение к конфиг-серверу
-
+    import: "configserver:"
   cloud:
     config:
       discovery:
         enabled: true
-        serviceId: config-server  # Подключение к Eureka-серверу для конфиг-сервера
-      fail-fast: true  # Если не удаётся подключиться к конфиг-серверу — сразу завершить работу
-
-  datasource:
-    url: jdbc:postgresql://smart-home-tech-db:5432/sht  # Подключение к базе данных (имя хоста из Docker Compose)
-    username: sh  # Имя пользователя для базы данных
-    password: sh  # Пароль для базы данных
-    driver-class-name: org.postgresql.Driver
-    hikari:
-      maximum-pool-size: 10  # Максимальное количество соединений в пуле
-      connection-timeout: 30000
-      idle-timeout: 600000
-      pool-name: HikariCP
-
-  jpa:
-    hibernate:
-      ddl-auto: update  # Автоматическое обновление схемы БД (на проде лучше использовать 'validate')
-    database-platform: org.hibernate.dialect.PostgreSQLDialect  # Диалект для PostgreSQL
-    show-sql: true  # Включение вывода SQL-запросов в лог
-    properties:
-      hibernate.format_sql: true  # Форматирование SQL-запросов
+        serviceId: config-server
+      fail-fast: true
+      retry:
+        useRandomPolicy: true
+        max-interval: 6000
 
 eureka:
   client:
     serviceUrl:
-      defaultZone: http://localhost:8761/eureka/  # Подключение к Eureka для регистрации сервиса
-
-server:
-  port: 0  # Случайный порт для запуска микросервиса
+      defaultZone: http://localhost:8761/eureka/

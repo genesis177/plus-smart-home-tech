@@ -1,28 +1,21 @@
 package ru.yandex.practicum.dto.warehouse;
 
 import jakarta.validation.constraints.NotNull;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
-/**
- * DTO, представляет общую информацию о забронированных товарах в корзине.
- */
+import lombok.*;
+import lombok.experimental.FieldDefaults;
 
 @Data
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class BookedProductsDto {
+    @NotNull
+    Double deliveryWeight;
 
     @NotNull
-    private Double deliveryWeight;
+    Double deliveryVolume;
 
     @NotNull
-    private Double deliveryVolume;
-
-    @NotNull
-    private Boolean fragile;
-
+    Boolean fragile;
 }
