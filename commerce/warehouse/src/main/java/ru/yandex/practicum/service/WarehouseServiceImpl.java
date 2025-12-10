@@ -1,5 +1,6 @@
 package ru.yandex.practicum.service;
 
+import jakarta.ws.rs.NotFoundException;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -8,20 +9,21 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.yandex.practicum.address.Address;
 import ru.yandex.practicum.dto.cart.ShoppingCartDto;
-import ru.yandex.practicum.dto.warehouse.AddProductToWarehouseRequest;
-import ru.yandex.practicum.dto.warehouse.AddressDto;
-import ru.yandex.practicum.dto.warehouse.BookedProductsDto;
-import ru.yandex.practicum.dto.warehouse.NewProductInWarehouseRequest;
+import ru.yandex.practicum.dto.warehouse.*;
 import ru.yandex.practicum.exception.NoSpecifiedProductInWarehouseException;
 import ru.yandex.practicum.exception.ProductNotFoundException;
 import ru.yandex.practicum.exception.SpecifiedProductAlreadyInWarehouseException;
 import ru.yandex.practicum.mapper.WarehouseMapper;
 import ru.yandex.practicum.model.Dimension;
+import ru.yandex.practicum.model.OrderBooking;
 import ru.yandex.practicum.model.Warehouse;
+import ru.yandex.practicum.repository.OrderBookingRepository;
 import ru.yandex.practicum.repository.WarehouseRepository;
 
 import java.util.Map;
 import java.util.UUID;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
@@ -29,6 +31,7 @@ import java.util.UUID;
 @Slf4j
 public class WarehouseServiceImpl implements WarehouseService{
     final WarehouseRepository warehouseRepository;
+    final OrderBookingRepository orderBookingRepository;
     final WarehouseMapper warehouseMapper;
 
     @Override
@@ -106,4 +109,45 @@ public class WarehouseServiceImpl implements WarehouseService{
         }
         warehouseRepository.save(warehouseMapper.toEntity(request));
     }
+
+    @Override
+    @Transactional
+    public void  shipToDelivery(ShippedToDeliveryRequest request){
+        OrderBooking orderBooking = orderBookingRepository.findById(request.getOrderId())
+                .orElseThrow(() -> new NotFoundException("Нету бронирования с ID: " + request.getOrderId()));
+        orderBooking.setDeliveryId(request.getDeliveryId());
+        orderBookingRepository.save(orderBooking);
+    }
+
+    @Override
+    @Transactional
+    public void acceptReturn(Map<UUID, Long> returnedProducts){
+        Map<UUID, Warehouse> products = warehouseRepository.findAllById(returnedProducts.keySet()).stream()
+                .collect(Collectors.toMap(Warehouse::getProductId, Function.identity()));
+        for (Map.Entry<UUID, Long> entry : returnedProducts.entrySet()) {
+            if (!products.containsKey(entry.getKey())) {
+                throw new NotFoundException("Товар с id = " + entry.getKey() + " не найден на складе");
+            }
+            Warehouse product = products.get(entry.getKey());
+            product.setQuantity(product.getQuantity() + entry.getValue());
+        }
+        warehouseRepository.saveAll(products.values());
+    }
+
+    @Override
+    @Transactional
+    public BookedProductsDto assembleProducts(AssemblyProductsForOrderRequest request){
+        ShoppingCartDto shoppingCart = ShoppingCartDto.builder()
+                .shoppingCartId(request.getOrderId())
+                .products(request.getProducts())
+                .build();
+        BookedProductsDto bookedProductsDto = checkProductQuantity(shoppingCart);
+        OrderBooking orderBooking = OrderBooking.builder()
+                .orderId(request.getOrderId())
+                .products(request.getProducts())
+                .build();
+        orderBookingRepository.save(orderBooking);
+        return bookedProductsDto;
+    }
+
 }

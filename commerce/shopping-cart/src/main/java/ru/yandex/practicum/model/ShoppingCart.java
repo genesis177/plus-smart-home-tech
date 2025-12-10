@@ -4,6 +4,7 @@ package ru.yandex.practicum.model;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
+import org.hibernate.annotations.UuidGenerator;
 
 import java.util.Map;
 import java.util.UUID;
@@ -19,7 +20,7 @@ import java.util.UUID;
 public class ShoppingCart {
     @Id
     @Column(name = "shopping_cart_id")
-    @GeneratedValue(strategy = GenerationType.UUID)
+    @UuidGenerator
     UUID shoppingCartId;
 
     @Column(name = "username", nullable = false)

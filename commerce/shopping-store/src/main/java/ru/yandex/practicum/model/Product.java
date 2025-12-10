@@ -3,6 +3,7 @@ package ru.yandex.practicum.model;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
+import org.hibernate.annotations.UuidGenerator;
 import ru.yandex.practicum.dto.store.enums.ProductCategory;
 import ru.yandex.practicum.dto.store.enums.ProductState;
 import ru.yandex.practicum.dto.store.enums.QuantityState;
@@ -20,7 +21,7 @@ import java.util.UUID;
 public class Product {
     @Id
     @Column(name ="product_id")
-    @GeneratedValue(strategy = GenerationType.UUID)
+    @UuidGenerator
     UUID productId;
 
     @Column(name = "product_name", nullable = false)

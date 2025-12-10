@@ -13,7 +13,6 @@ import ru.yandex.practicum.dto.store.ProductsResponseList;
 import ru.yandex.practicum.dto.store.SortField;
 import ru.yandex.practicum.dto.store.enums.ProductCategory;
 import ru.yandex.practicum.dto.store.enums.ProductState;
-import ru.yandex.practicum.dto.store.enums.QuantityState;
 import ru.yandex.practicum.dto.store.updateStockLevelStateRequest;
 import ru.yandex.practicum.exception.ProductNotFoundException;
 import ru.yandex.practicum.mapper.ShoppingStoreMapper;
@@ -59,19 +58,7 @@ public class StoreServiceImpl implements StoreService {
     @Override
     @Transactional
     public ProductDto createProduct(ProductDto productDto) {
-
         Product product = shoppingStoreMapper.toEntity(productDto);
-
-        if (product.getProductState() == null) {
-            product.setProductState(ProductState.ACTIVE);
-        }
-        if (product.getQuantityState() == null) {
-            product.setQuantityState(QuantityState.ENOUGH);
-        }
-        if (product.getProductCategory() == null) {
-            product.setProductCategory(ProductCategory.LIGHTING);
-        }
-
         return shoppingStoreMapper.toDto(shoppingStoreRepository.save(product));
     }
 
