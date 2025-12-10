@@ -1,4 +1,43 @@
 services:
+  smart-home-db:
+    image: postgres:16.1
+    container_name: postgres-smarthome
+    ports:
+      - "6541:5432"
+    environment:
+      POSTGRES_DB: telemetry
+      POSTGRES_USER: dbuser
+      POSTGRES_PASSWORD: dbuser
+
+  store-db:
+    image: postgres:16.1
+    container_name: store-db
+    ports:
+      - "6542:5432"
+    environment:
+      POSTGRES_DB: store
+      POSTGRES_USER: shoppingStore
+      POSTGRES_PASSWORD: shoppingStore
+
+  cart-db:
+    image: postgres:16.1
+    container_name: cart-db
+    ports:
+      - "6543:5432"
+    environment:
+      POSTGRES_DB: cart
+      POSTGRES_USER: shoppingCart
+      POSTGRES_PASSWORD: shoppingCart
+
+  warehouse-db:
+    image: postgres:16.1
+    container_name: warehouse-db
+    ports:
+      - "6544:5432"
+    environment:
+      POSTGRES_DB: warehouse
+      POSTGRES_USER: warehouse
+      POSTGRES_PASSWORD: warehouse
   kafka:
     image: confluentinc/confluent-local:7.4.3
     hostname: kafka
@@ -33,12 +72,3 @@ services:
                              --partitions 1 --replication-factor 1 --if-not-exists \
                              --bootstrap-server kafka:29092'"
     init: true
-  db:
-    image: postgres:16.1
-    container_name: smart-home-db
-    ports:
-      - "5432:5432"
-    environment:
-      - POSTGRES_PASSWORD=secret
-      - POSTGRES_USER=smart
-      - POSTGRES_DB=smart

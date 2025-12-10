@@ -1,38 +1,38 @@
 package ru.yandex.practicum.model;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.PrimaryKeyJoinColumn;
-import jakarta.persistence.SecondaryTable;
-import jakarta.persistence.Table;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import jakarta.persistence.*;
+import lombok.*;
+import lombok.experimental.FieldDefaults;
+import ru.yandex.practicum.kafka.telemetry.event.ConditionOperationAvro;
+import ru.yandex.practicum.kafka.telemetry.event.ConditionTypeAvro;
 
-@Entity
 @Getter
 @Setter
-@ToString
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE)
+@Entity
 @Table(name = "conditions")
 @SecondaryTable(name = "scenario_conditions", pkJoinColumns = @PrimaryKeyJoinColumn(name = "condition_id"))
 public class Condition {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long id;
+    Long id;
 
-    private ConditionType type;
-    private ConditionOperation operation;
-    private int value;
+    @Enumerated(EnumType.STRING)
+    ConditionTypeAvro type;
+
+    @Enumerated(EnumType.STRING)
+    ConditionOperationAvro operation;
+
+    Integer value;
 
     @ManyToOne
     @JoinColumn(name = "scenario_id", table = "scenario_conditions")
-    private Scenario scenario;
+    Scenario scenario;
 
     @ManyToOne
     @JoinColumn(name = "sensor_id", table = "scenario_conditions")
-    private Sensor sensor;
+    Sensor sensor;
 }

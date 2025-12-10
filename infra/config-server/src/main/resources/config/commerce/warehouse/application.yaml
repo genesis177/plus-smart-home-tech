@@ -1,0 +1,20 @@
+server:
+  port: 0
+
+spring:
+  application:
+    name: warehouse
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://localhost:6544/warehouse
+    username: warehouse
+    password: warehouse
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        format_sql: true
+    show-sql: true
+
